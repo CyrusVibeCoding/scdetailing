@@ -6,7 +6,7 @@ Connected November 7, 2026.
 
 - Project `gwlgkojgaenkixstfjlp` in the SCDetailing organization.
 - Edge Function `sc-ai-chat` with JWT verification enabled.
-- Gemini model `gemini-3.1-flash-lite`, configurable through the `GEMINI_MODEL` server secret.
+- Gemini model `gemini-3.5-flash-lite`, configurable through the `GEMINI_MODEL` server secret. Temporary provider failures and timeouts fall back once to `gemini-3.1-flash-lite`. Each provider attempt has a 15-second timeout. Rate-limit errors are shown directly.
 - Gemini credential stored as the Supabase `GEMINI_API_KEY` secret.
 - `config.js` contains the public endpoint and public Supabase publishable key.
 - Allowed website origins are `https://cyrusvibecoding.github.io`, `http://127.0.0.1:4180`, and `http://localhost:4180`.
