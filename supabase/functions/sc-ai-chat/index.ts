@@ -38,8 +38,18 @@ Deno.serve(async request => {
     if (!Array.isArray(messages) || !messages.length || messages.length > 12 || messages.some(message => !message || !['user','model'].includes(message.role) || typeof message.text !== 'string' || !message.text.trim() || message.text.length > 3000) || messages.at(-1).role !== 'user') return respond({error:'Please send a shorter message.'},400);
     if (messages.some(message => privateInfo.test(message.text))) return respond({error:'Please put contact details and street addresses in the separate Request a detail form.'},400);
     if (!env('GEMINI_API_KEY')) return respond({error:'AI chat is not configured yet.'},503);
-    const model = env('GEMINI_MODEL') || 'gemini-3.1-flash-lite';
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', {method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':env('GEMINI_API_KEY')}, body:JSON.stringify({systemInstruction:{parts:[{text:instruction}]},contents:messages.map(message => ({role:message.role,parts:[{text:message.text}]})),generationConfig:{maxOutputTokens:768}}), signal:AbortSignal.timeout(25000)});
+    const models = [...new Set([env('GEMINI_MODEL') || 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'])];
+    let response: Response | undefined;
+    for (const model of models) {
+      try {
+        response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', {method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':env('GEMINI_API_KEY')}, body:JSON.stringify({systemInstruction:{parts:[{text:instruction}]},contents:messages.map(message => ({role:message.role,parts:[{text:message.text}]})),generationConfig:{maxOutputTokens:768}}), signal:AbortSignal.timeout(15000)});
+        if (response.ok || ![500,502,503,504].includes(response.status)) break;
+        console.warn('Gemini temporary status',response.status);
+      } catch (error) {
+        if (model === models.at(-1)) throw error;
+      }
+    }
+    if (!response) throw Error('AI provider unavailable');
     if (!response.ok) { console.error('Gemini status',response.status); return respond({error:response.status === 429 ? 'The AI free-tier limit has been reached. Please try again later, or use Request a detail.' : 'The AI is temporarily unavailable. Please try again, or use Request a detail.'}, response.status === 429 ? 429 : 503); }
     const result = await response.json();
     const reply = result.candidates?.[0]?.content?.parts?.filter((part: {text?:string;thought?:boolean}) => part.text && !part.thought).map((part:{text:string}) => part.text).join('').trim();
