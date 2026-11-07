@@ -9,7 +9,7 @@ Connected November 7, 2026.
 - Gemini model `gemini-3.5-flash-lite`, configurable through the `GEMINI_MODEL` server secret. Temporary provider failures and timeouts fall back once to `gemini-3.1-flash-lite`. Each provider attempt has a 15-second timeout. Rate-limit errors are shown directly.
 - Gemini credential stored as the Supabase `GEMINI_API_KEY` secret.
 - `config.js` contains the public endpoint and public Supabase publishable key.
-- Allowed website origins are `https://cyrusvibecoding.github.io`, `http://127.0.0.1:4180`, and `http://localhost:4180`.
+- Allowed website origins are `https://scdetailing.org`, `https://www.scdetailing.org`, `https://cyrusvibecoding.github.io`, `http://127.0.0.1:4180`, and `http://localhost:4180`.
 
 ## Website behavior
 
@@ -44,3 +44,7 @@ The older `SETUP.md` describes the earlier Telegram bridge. This document descri
 ## Verification
 
 Live Gemini responses were verified through the API and through the website's hero/popup entry point. Conversation follow-up correctly deferred unknown prices and appointment guarantees. The separate form saved a test request, and SQL inspection confirmed persistence. Anonymous request-table reads were rejected, direct budget RPC permission was denied, invalid request fields returned 400, and an unrelated origin returned 403. Server-side filtering rejected a test email before Gemini invocation.
+
+## Custom domain update, November 7, 2026
+Configured GitHub Pages custom domain scdetailing.org. IONOS apex A records point to 185.199.108.153, 185.199.109.153, 185.199.110.153, and 185.199.111.153. The www CNAME points to cyrusvibecoding.github.io. Replaced the IONOS default parking records. Public DNS and HTTP delivery were verified. HTTPS issuance is pending GitHub DNS validation.
+Deployed sc-ai-chat version 3 with the custom HTTPS origins. Replies use simple English, usually 1-3 short sentences under 45 words, with at most one question. Availability always requires team confirmation, even if a future calendar looks free. Both custom-domain origins passed access tests, an unrelated origin returned 403, and a real Gemini response returned 200 and deferred appointment confirmation. JWT verification remains enabled. Calendar, prices, notifications, and automatic scheduling still require further setup or business input.
