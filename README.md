@@ -1,6 +1,6 @@
 # SC Detailing
 
-Mobile website with guided booking chat and Telegram staff replies through Supabase.
+Mobile detailing website with a live Gemini AI receptionist and private booking requests through Supabase. See AI-SETUP.md for the current backend, request review, and verification.
 
 See SETUP.md for deployment, secrets, limitations, and verification. Serve locally with python -m http.server 4173. No build required.
 
