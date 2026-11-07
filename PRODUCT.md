@@ -1,0 +1,1 @@
+SC Detailing serves vehicle owners requesting interior, exterior, or full detailing. Main task: request detail and chat with staff. Mobile first. Staff receive Telegram alerts and reply into website. No confirmed prices, service area, reviews, or hours supplied. User pins blue photographic sky, serif headline and translucent chat reference.

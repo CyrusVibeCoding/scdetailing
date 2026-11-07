@@ -1,0 +1,1 @@
+window.SC_CONFIG = { chatEndpoint: "" };

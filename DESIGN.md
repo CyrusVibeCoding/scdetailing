@@ -1,0 +1,5 @@
+Pinned reference: blue photographic sky fading into ink, elegant Instrument Serif display type, DM Sans controls, white buttons, translucent chat launcher. Mobile single column with bottom sheet chat. No invented prices, reviews, hours, or availability. Seed reference seed:b57ae4abf68ba77b; user pinned design governs.
+
+November 7 lower-page revision. User approved reusing the red Porsche 930 and the After Hours scroll transition. A midnight-blue sticky section fades the car into view, dissolves the road, and moves to a closer car view beside the introduction. Ivory service rows replace the old photo cards. A powder-blue conversation section explains the booking process. The existing service selection and chat entry points remain attached to their original application handlers.
+
+Motion is tied to scroll, reversible, and rendered only while changing. Reduced motion uses a stationary composition with a shorter section. The high-resolution roadside poster is the loading and WebGL fallback. Preserve the asset attribution when distributing the site.
