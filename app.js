@@ -97,7 +97,7 @@ async function api(body) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', apikey: config.publishableKey, Authorization: 'Bearer ' + config.publishableKey },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(35000)
+    signal: AbortSignal.timeout(45000)
   });
   const data = await response.json();
   if (!response.ok) throw Error(data.error || 'Chat is unavailable. Please try again.');
