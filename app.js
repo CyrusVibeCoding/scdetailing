@@ -1,22 +1,198 @@
-const $=s=>document.querySelector(s),chat=$('#chat'),log=$('#messages'),input=$('#message'),status=$('#chat-status'),quick=$('#quick-replies');
-const fields=[['name','What’s your name?'],['vehicle','What do you drive? Include year, make, and model.'],['service','What kind of detail would you like?'],['address','What’s the service address, including city?'],['contact','What email or phone can we use if you leave the chat?']];
-let step=0,details={},session=null,pending=false,seen=new Set(),timer=null,trigger=null;
-try{session=JSON.parse(localStorage.getItem('sc-chat-session')||'null')}catch{}
-function bubble(text,role='assistant'){const p=document.createElement('div');p.className='bubble '+role;const label=document.createElement('small');label.textContent=role==='visitor'?'You':role==='staff'?'SC Detailing team':'Booking assistant';p.append(label,document.createTextNode(text));log.append(p);log.scrollTop=log.scrollHeight}
-function choices(items){quick.replaceChildren();for(const text of items){const b=document.createElement('button');b.textContent=text;b.onclick=()=>submit(text);quick.append(b)}}
-function ask(){if(step<fields.length){bubble(fields[step][1]);choices(fields[step][0]==='service'?['Interior detail','Exterior detail','Full detail']:[])}else{bubble('Please check your request:\n'+fields.map(([key])=>key+': '+details[key]).join('\n'));choices(['Send request','Start over'])}}
-async function api(action,body={}){const endpoint=window.SC_CONFIG?.chatEndpoint;if(!endpoint)throw Error('Chat is not connected yet. Please try again once booking opens.');const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...session,...body})});const data=await res.json();if(!res.ok)throw Error(data.error||'Connection failed. Your message was not confirmed. Try again.');return data}
-async function poll(){if(!session||!chat.open||document.hidden)return;try{const data=await api('list');for(const m of data.messages){if(!seen.has(m.id)){seen.add(m.id);bubble(m.body,m.role)}}status.textContent=''}catch(e){status.textContent=e.message}}
-function openChat(seed){trigger=document.activeElement;if(!chat.open)chat.showModal();if(!log.children.length){if(session){poll()}else{bubble('Welcome to SC Detailing. I’ll collect a few details, then connect you with our team.');if(seed)bubble(seed,'visitor');ask()}}clearInterval(timer);timer=setInterval(poll,6000)}
-document.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>openChat());
-document.querySelectorAll('[data-service]').forEach(b=>b.onclick=()=>{if(!session)details.service=b.dataset.service;openChat()});
-$('#hero-chat').onsubmit=e=>{e.preventDefault();openChat($('#hero-message').value.trim());$('#hero-message').value=''};
-$('#close-chat').onclick=()=>chat.close();chat.addEventListener('close',()=>{clearInterval(timer);trigger?.focus()});
-async function submit(text){text=text.trim();if(!text||pending)return;status.textContent='';
-if(!session&&step<fields.length){if(text.length<2||text.length>300){status.textContent='Please use 2–300 characters for this detail.';return}details[fields[step][0]]=text;bubble(text,'visitor');input.value='';step++;if(step===2&&details.service)step++;ask();return}
-if(!session&&text==='Start over'){step=0;details={};log.replaceChildren();ask();return}
-if(!session&&text!=='Send request'){status.textContent='Tap Send request or Start over to edit.';return}
-pending=true;$('#message-form button').disabled=true;quick.querySelectorAll('button').forEach(b=>b.disabled=true);
-try{if(!session){const data=await api('create',{details});session={id:data.id,token:data.token};try{localStorage.setItem('sc-chat-session',JSON.stringify(session))}catch{}quick.replaceChildren();log.replaceChildren();bubble('Request saved. Our team will reply here when available. Pricing and availability are not confirmed yet.');await poll()}else{const clientId=input.dataset.pendingText===text&&input.dataset.pendingId?input.dataset.pendingId:crypto.randomUUID();input.dataset.pendingId=clientId;input.dataset.pendingText=text;await api('send',{text,clientId});input.value='';delete input.dataset.pendingId;delete input.dataset.pendingText;await poll()}}catch(e){status.textContent=e.message;requestAnimationFrame(()=>{log.scrollTop=log.scrollHeight})}finally{pending=false;$('#message-form button').disabled=false;quick.querySelectorAll('button').forEach(b=>b.disabled=false)}}
-$('#message-form').onsubmit=e=>{e.preventDefault();submit(input.value)};
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});
+const $ = selector => document.querySelector(selector);
+const chat = $('#chat');
+const log = $('#messages');
+const input = $('#message');
+const status = $('#chat-status');
+const quick = $('#quick-replies');
+const foot = $('.chat-foot');
+const fields = [
+  ['name', 'What’s your name?'],
+  ['vehicle', 'What do you drive? Include year, make, and model.'],
+  ['service', 'What kind of detail would you like?'],
+  ['address', 'What’s the service address, including city?'],
+  ['contact', 'What email or phone can the team use to contact you?']
+];
+const services = ['Interior detail', 'Exterior detail', 'Full detail'];
+let mode = 'ai';
+let history = [];
+let details = {};
+let step = 0;
+let pending = false;
+let requestId;
+let trigger;
+
+function bubble(text, role = 'assistant') {
+  const element = document.createElement('div');
+  element.className = 'bubble ' + role;
+  const label = document.createElement('small');
+  label.textContent = role === 'visitor' ? 'You' : mode === 'ai' ? 'SC Detailing AI' : 'Booking form';
+  element.append(label, document.createTextNode(text));
+  log.append(element);
+  log.scrollTop = log.scrollHeight;
+  return element;
+}
+
+function choices(items) {
+  quick.replaceChildren();
+  for (const [text, action] of items) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = text;
+    button.onclick = action;
+    button.disabled = pending;
+    quick.append(button);
+  }
+}
+
+function showAI() {
+  if (pending) return;
+  mode = 'ai';
+  log.replaceChildren();
+  status.textContent = '';
+  input.placeholder = 'Ask about your car…';
+  foot.textContent = 'AI can make mistakes. Keep contact details and addresses in the separate booking form.';
+  bubble('Hi! I’m SC Detailing’s AI assistant. Tell me what your car needs, or ask about our services.');
+  for (const message of history) bubble(message.text, message.role === 'user' ? 'visitor' : 'assistant');
+  choices([['Request a detail', () => startRequest()]]);
+}
+
+function ask() {
+  if (step < fields.length) {
+    const [field, question] = fields[step];
+    bubble(question);
+    input.placeholder = field === 'contact' ? 'Your email or phone…' : 'Your answer…';
+    const options = field === 'service' ? services.map(service => [service, () => submit(service)]) : [];
+    choices([...options, ['Ask the AI', showAI]]);
+  } else {
+    bubble('Check your request before sending.\n' + fields.map(([field]) => field + ': ' + details[field]).join('\n'));
+    choices([['Send request', () => submit('Send request')], ['Start over', () => startRequest()], ['Ask the AI', showAI]]);
+    input.placeholder = 'Use the buttons above to continue';
+  }
+}
+
+function startRequest(service) {
+  if (pending) return;
+  mode = 'request';
+  details = service ? { service } : {};
+  requestId = crypto.randomUUID();
+  step = 0;
+  log.replaceChildren();
+  input.value = '';
+  status.textContent = '';
+  foot.textContent = 'Booking details are stored privately in SC Detailing’s database and are not sent to Gemini.';
+  bubble('This separate form saves a detailing request. Pricing and appointment time need confirmation.');
+  ask();
+}
+
+function openChat() {
+  trigger = document.activeElement;
+  if (!chat.open) chat.showModal();
+  if (!log.children.length) showAI();
+}
+
+async function api(body) {
+  const config = window.SC_CONFIG;
+  if (!config?.aiEndpoint || !config?.publishableKey) throw Error('Chat is not connected yet.');
+  const response = await fetch(config.aiEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: config.publishableKey, Authorization: 'Bearer ' + config.publishableKey },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(35000)
+  });
+  const data = await response.json();
+  if (!response.ok) throw Error(data.error || 'Chat is unavailable. Please try again.');
+  return data;
+}
+
+async function submit(text) {
+  text = text.trim();
+  if (!text || pending) return;
+  status.textContent = '';
+  if (mode === 'saved') {
+    status.textContent = 'Your request is already saved. Use Ask the AI to return to questions.';
+    return;
+  }
+  if (mode === 'request' && step < fields.length) {
+    if (text.length < 2 || text.length > 300) {
+      status.textContent = 'Please use 2–300 characters for this detail.';
+      return;
+    }
+    if (fields[step][0] === 'service' && !services.includes(text)) {
+      status.textContent = 'Choose Interior detail, Exterior detail, or Full detail.';
+      return;
+    }
+    details[fields[step][0]] = text;
+    bubble(text, 'visitor');
+    input.value = '';
+    step++;
+    if (step === 2 && details.service) step++;
+    ask();
+    return;
+  }
+  if (mode === 'request' && text !== 'Send request') {
+    status.textContent = 'Use Send request or Start over above.';
+    return;
+  }
+  pending = true;
+  input.disabled = true;
+  $('#message-form button').disabled = true;
+  quick.querySelectorAll('button').forEach(button => button.disabled = true);
+  let staged;
+  try {
+    if (mode === 'request') {
+      status.textContent = 'Saving your request…';
+      await api({ action: 'request', id: requestId, details });
+      bubble('Request saved. Your reference is ' + requestId.slice(0, 8) + '. Pricing and appointment time still need confirmation from SC Detailing.');
+      details = {};
+      mode = 'saved';
+      choices([['Ask the AI', showAI]]);
+    } else {
+      staged = bubble(text, 'visitor');
+      status.textContent = 'Thinking…';
+      const messages = [...history.slice(-10), { role: 'user', text }];
+      while (JSON.stringify({ action: 'chat', messages }).length > 15000 && messages.length > 1) {
+        messages.splice(0, 2);
+      }
+      const data = await api({ action: 'chat', messages });
+      if (typeof data.reply !== 'string' || !data.reply.trim()) throw Error('No answer received. Please try again.');
+      history.push({ role: 'user', text }, { role: 'model', text: data.reply });
+      history = history.slice(-10);
+      bubble(data.reply);
+    }
+    input.value = '';
+    status.textContent = '';
+  } catch (error) {
+    staged?.remove();
+    status.textContent = error.name === 'TimeoutError' ? 'The response took too long. Please try again.' : error.message;
+  } finally {
+    pending = false;
+    input.disabled = false;
+    $('#message-form button').disabled = false;
+    quick.querySelectorAll('button').forEach(button => button.disabled = false);
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+document.querySelectorAll('[data-chat]').forEach(button => button.onclick = openChat);
+document.querySelectorAll('[data-service]').forEach(button => button.onclick = () => {
+  openChat();
+  startRequest(button.dataset.service);
+});
+$('#hero-chat').onsubmit = event => {
+  event.preventDefault();
+  openChat();
+  if (pending) return;
+  const text = $('#hero-message').value.trim();
+  showAI();
+  if (text) {
+    input.value = text;
+    submit(text);
+    $('#hero-message').value = '';
+  }
+};
+$('#close-chat').onclick = () => chat.close();
+chat.addEventListener('close', () => trigger?.focus());
+$('#message-form').onsubmit = event => {
+  event.preventDefault();
+  submit(input.value);
+};
