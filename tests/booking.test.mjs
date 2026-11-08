@@ -7,8 +7,17 @@ test('consent and phone are required; extra fields are dropped',()=>{
   assert.equal(bookingDetails({...details,phone:'bad'}),null);
   assert.equal(bookingDetails({...details,service:'unknown'}),null);
   assert.equal(bookingDetails({...details,phone:'202-555-0147<script>'}),null);
-  const saved=bookingDetails({...details,address:'not collected',price:1});
+  const saved=bookingDetails({...details,price:1});
   assert.equal(saved.schemaVersion,2); assert.equal(saved.price,undefined); assert.equal(saved.address,undefined);
+});
+test('new addresses use fixed locality, validate length, and escape alerts',()=>{
+  const saved=bookingDetails({...details,address:'  123 Fictional Lane  ',city:'Houston',state:'CA'});
+  assert.equal(saved.address,'123 Fictional Lane');
+  assert.equal(saved.city,'The Woodlands'); assert.equal(saved.state,'TX'); assert.equal(saved.schemaVersion,3);
+  assert.equal(bookingDetails({...details,address:'x'}),null);
+  assert.equal(bookingDetails({...details,address:'x'.repeat(201)}),null);
+  assert.equal(bookingDetails({...details,address:'123 Fictional\nLane'}),null);
+  assert.match(notificationText({...saved,address:'123 <b> Lane'}),/Address:<\/b> 123 &lt;b&gt; Lane, The Woodlands, TX/);
 });
 test('alert contains only the requested seven lines and escapes customer values',()=>{
   const text=notificationText({...details,name:'Alex <b>& Fictional'});

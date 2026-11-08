@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#102d3c"><title>Wash schedule | SC Detailing</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="assets/leaflet.css"><link rel="stylesheet" href="admin.css">
+<script src="config.js"></script><script src="assets/admin.js" defer></script>
+</head><body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="admin-header"><a href="index.html" aria-label="SC Detailing home"><img src="assets/logo-editorial-blue.svg" width="78" height="55" alt="SC Detailing"></a><span>Wash schedule</span><button id="sign-out" hidden>Sign out</button></header>
+<main id="main">
+<section id="sign-in" class="sign-in" aria-labelledby="login-heading">
+<h1 id="login-heading">A little more organized.</h1><p>Sign in to manage requests and upcoming washes.</p>
+<form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required maxlength="254"></label><label>Password<input name="password" type="password" autocomplete="current-password" required minlength="10" maxlength="128"></label><button class="primary" type="submit">Sign in</button><button type="button" id="create-account">Create admin account</button></form>
+<p class="help">First visit? Create your account, confirm your email, then return here to sign in. Only approved email addresses can access customer details.</p>
+</section>
+<section id="workspace" hidden aria-labelledby="workspace-heading">
+<div class="workspace-heading"><div><h1 id="workspace-heading">Your next washes.</h1><p>Requests, plans, and places. All times in The Woodlands.</p></div><button id="refresh">Refresh jobs</button></div>
+<div class="filters" aria-label="Filter jobs"><button data-filter="upcoming" aria-pressed="true">Upcoming</button><button data-filter="new" aria-pressed="false">New requests</button><button data-filter="completed" aria-pressed="false">Completed</button><button data-filter="all" aria-pressed="false">All jobs</button></div>
+<div class="workspace-grid"><section class="job-list" aria-label="Wash requests"><p id="job-count"></p><div id="jobs"></div></section>
+<div class="map-column"><div id="map" aria-label="Map of wash locations"></div><p class="help" id="map-help">Select a job to see its details. Jobs appear on map after their pin is saved.</p>
+<section id="job-detail" hidden aria-labelledby="detail-heading"><h2 id="detail-heading"></h2><p id="detail-summary"></p><p id="detail-address"></p><a id="detail-phone"></a><p id="detail-needs"></p>
+<form id="schedule-form"><div class="field-pair"><label>Status<select name="status"><option value="new">New request</option><option value="scheduled">Scheduled</option><option value="completed">Completed</option></select></label><label>Wash date and time<input name="scheduledAt" type="datetime-local" step="60"></label></div><p class="help">Central time (America/Chicago). Scheduling here records your plan. Confirm it with customer by text.</p>
+<div class="pin-actions"><button id="find-address" type="button">Find address</button><button id="place-pin" type="button">Place pin on map</button><button id="clear-pin" type="button">Clear pin</button></div><p class="help">Find address sends selected address to OpenStreetMap search. Check returned pin, or place it yourself.</p><p id="pin-status" class="help"></p><button class="primary" type="submit">Save job</button></form>
+</section></div></div>
+</section>
+<p id="admin-status" role="status" aria-live="polite"></p>
+<noscript>Enable JavaScript to sign in and manage jobs.</noscript>
+</main></body></html>

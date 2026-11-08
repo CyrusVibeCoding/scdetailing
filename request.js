@@ -18,16 +18,16 @@ form.addEventListener('submit', event => {
   if (!/^[+\d\s().-]+$/.test(phone.value) || digits.length < 10 || digits.length > 15) {
     phone.setCustomValidity('Enter a phone number with 10–15 digits.'); phone.reportValidity(); return;
   }
-  for (const key of ['name', 'vehicle', 'preferredTime']) {
+  for (const key of ['name', 'address', 'vehicle', 'preferredTime']) {
     if (form.elements[key].value.trim().length < 2) {
-      status.textContent = 'Please complete your name, vehicle, and preferred time.';
+      status.textContent = 'Please complete your name, street address, vehicle, and preferred time.';
       form.elements[key].focus(); return;
     }
   }
-  details = Object.fromEntries(['name', 'phone', 'vehicle', 'service', 'preferredTime', 'needs'].map(key => [key, form.elements[key].value.trim()]));
+  details = Object.fromEntries(['name', 'phone', 'address', 'vehicle', 'service', 'preferredTime', 'needs'].map(key => [key, form.elements[key].value.trim()]));
   details.consent = form.elements.consent.checked;
   const list = document.querySelector('#review-details'); list.replaceChildren();
-  for (const [key, label] of [['name','Name'],['phone','Phone number'],['vehicle','Vehicle'],['service','Package'],['preferredTime','Preferred day and time'],['needs','Cleaning needs'],['consent','Contact consent']]) {
+  for (const [key, label] of [['name','Name'],['phone','Phone number'],['address','Street address (The Woodlands, TX)'],['vehicle','Vehicle'],['service','Package'],['preferredTime','Preferred day and time'],['needs','Cleaning needs'],['consent','Contact consent']]) {
     const term = document.createElement('dt'); term.textContent = label;
     const value = document.createElement('dd');
     value.textContent = key === 'service' ? packages[details[key]] : key === 'consent' ? 'Agreed to contact about this request' : details[key] || 'None added';

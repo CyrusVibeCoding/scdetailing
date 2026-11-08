@@ -14,8 +14,11 @@ export function bookingDetails(value: unknown): Record<string, unknown> | null {
   const phone = (d.phone as string).trim();
   const digits = phone.replace(/\D/g,'');
   if (!/^[+\d\s().-]+$/.test(phone) || digits.length < 10 || digits.length > 15 || d.consent !== true || !Object.hasOwn(packages,(d.service as string).trim())) return null;
-  // Allowlist only: no address, chat history, or client-supplied price is stored.
-  return {...Object.fromEntries(Object.keys(limits).map(key=>[key,(d[key] as string).trim()])),consent:true,schemaVersion:2};
+  // Older open forms remain valid; new forms include a street address.
+  if (d.address !== undefined && (typeof d.address !== 'string' || d.address.trim().length < 5 || d.address.length > 200 || /[\u0000-\u001f\u007f]/.test(d.address))) return null;
+  const address = typeof d.address === 'string' ? {address: d.address.trim(), city: 'The Woodlands', state: 'TX'} : {};
+  // Only explicitly supported customer fields are stored.
+  return {...Object.fromEntries(Object.keys(limits).map(key=>[key,(d[key] as string).trim()])),...address,consent:true,schemaVersion:d.address === undefined ? 2 : 3};
 }
 export function notificationText(d:Record<string,unknown>) {
   const p=packages[d.service as string];
@@ -26,6 +29,7 @@ export function notificationText(d:Record<string,unknown>) {
     '<b>Name:</b> ' + text(d.name),
     '<b>Phone:</b> ' + text(d.phone),
     '<b>Vehicle:</b> ' + text(d.vehicle),
+    ...(d.address ? ['<b>Address:</b> ' + text(d.address) + ', The Woodlands, TX'] : []),
     '<b>Package:</b> $' + p.price + ' ' + p.label,
     '<b>Preferred time:</b> ' + text(d.preferredTime),
     '<b>Cleaning needs:</b> ' + text(d.needs || 'None added')

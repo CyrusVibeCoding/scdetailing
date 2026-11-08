@@ -19,6 +19,7 @@
 <div class="request-fields">
 <label>Name<input name="name" autocomplete="name" required minlength="2" maxlength="80"></label>
 <label>Phone number<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="30" aria-describedby="phone-help"><small id="phone-help">A number Saif can text.</small></label>
+<label class="full-width">Street address<input name="address" autocomplete="street-address" required minlength="5" maxlength="200" aria-describedby="address-help"><small id="address-help">The Woodlands, TX. Used privately by our team to plan your wash.</small></label>
 <label class="full-width">Vehicle<input name="vehicle" autocomplete="off" required minlength="2" maxlength="120" placeholder="Year, make, and model"></label>
 <label class="full-width">Package<select name="service" required><option value="">Choose a package</option><option value="Exterior detail">Exterior detail · $35</option><option value="Interior detail">Interior detail · $40</option><option value="Full detail">Interior + exterior combo · $60</option></select></label>
 <label class="full-width">Preferred day and time<input name="preferredTime" autocomplete="off" required minlength="2" maxlength="160" placeholder="For example, Saturday afternoon"></label>
@@ -34,5 +35,5 @@
 <p id="request-status" role="status" aria-live="polite"></p>
 <noscript>Please enable JavaScript to review and send your request.</noscript>
 </section></main>
-<script src="config.js?v=booking-1"></script><script src="booking-api.js?v=booking-1"></script><script src="request.js?v=booking-1"></script>
+<script src="config.js?v=booking-1"></script><script src="booking-api.js?v=booking-1"></script><script src="request.js?v=address-1"></script>
 </body></html>

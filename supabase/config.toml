@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.sc-ai-chat]
 verify_jwt = true
+
+[functions.sc-admin]
+verify_jwt = true
