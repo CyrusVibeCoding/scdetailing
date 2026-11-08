@@ -63,3 +63,9 @@ Requests and alert jobs commit atomically, with idempotent UUID retries. The out
 One fictional request, reference 9feff8af-d6db-4ef3-a68b-3e1e75550f34, verified browser review/submission, private persistence, and receipt in Telegram. Its phone uses the fictional 555 range and it is marked DO NOT CONTACT/SCHEDULE. Concurrent duplicate retries returned success without another alert. Validation/privacy checks are in VALIDATION.md.
 
 Deployed booking backend version 8 with JWT verification enabled. Gemini primary/fallback remain gemini-3.5-flash-lite and gemini-3.1-flash-lite.
+
+## November 8 publication and old-form recovery
+
++Published the consented booking website to scdetailing.org in commit e57db917494a4aa85ec46bf9cd0d1596a21798b8. GitHub Pages deployment 42489139309 completed successfully. Active backend is sc-ai-chat version 9, with JWT verification enabled. An old chat-form payload now returns an explicit refresh-and-open-the-new-form message. The owner’s screenshot showed the earlier mismatch between the new backend and the unpublished old frontend. Publishing the matching frontend resolved it.
+
++Verified the public service button opens request.html with the selected $60 combo. A fictional public-site request b9986117-df1e-4ff0-b510-0b938ea44132 saved and delivered as Telegram message 3, with one attempt and no delivery error. The live AI chat and Have Saif contact me button also worked. The owner will add Saif later and can test using their own account.
