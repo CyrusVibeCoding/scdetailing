@@ -1,16 +1,18 @@
-# Secrets remain in memory. Run after bot has received a private message from you.
+# Optional discovery helper. Active flow uses outbound notifications, with no webhook.
 $ErrorActionPreference = 'Stop'
 $secureToken = Read-Host 'BotFather token' -AsSecureString
 $token = [System.Net.NetworkCredential]::new('', $secureToken).Password
 $base = 'https://api.telegram.org/bot' + $token
 try {
   $updates = Invoke-RestMethod -Method Post -Uri ($base + '/getUpdates') -ContentType 'application/json' -Body '{}'
-  $updates.result | ForEach-Object { if ($_.message) { [pscustomobject]@{ ChatId=$_.message.chat.id; AdminUserId=$_.message.from.id; ChatType=$_.message.chat.type } } } | Format-Table
-  $secretSecure = Read-Host 'TELEGRAM_WEBHOOK_SECRET already added in Supabase' -AsSecureString
-  $secret = [System.Net.NetworkCredential]::new('', $secretSecure).Password
-  $body = @{url='https://ywqpluaiepwetqrlskit.supabase.co/functions/v1/detailing-chat?telegram=1'; secret_token=$secret; allowed_updates=@('message')} | ConvertTo-Json
-  $result = Invoke-RestMethod -Method Post -Uri ($base + '/setWebhook') -ContentType 'application/json' -Body $body
-  Write-Output ('Webhook registered: ' + $result.ok)
+$channels = @($updates.result | ForEach-Object {
+  if ($_.channel_post) {
+    [pscustomobject]@{ ChatId=$_.channel_post.chat.id; Title=$_.channel_post.chat.title; Type=$_.channel_post.chat.type }
+  }
+})
+if ($channels.Count) { $channels | Sort-Object ChatId -Unique | Format-Table }
+else { Write-Output 'No channel post found. Add the bot as a channel admin, post SC setup test in the channel, then run again.' }
+Write-Output 'Store TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID only in Supabase Edge Function secrets for project gwlgkojgaenkixstfjlp. No webhook is needed.'
 } catch {
-  Write-Error 'Telegram setup failed. Check token and Supabase function deployment. Secrets were not printed.'
-} finally { $token=$null; $base=$null; $secret=$null; $body=$null }
+Write-Output 'Telegram discovery failed. Check the token and channel permissions. Secrets were not printed.'
+} finally { $token=$null; $base=$null; $secureToken=$null }

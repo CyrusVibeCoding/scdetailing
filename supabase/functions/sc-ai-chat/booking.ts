@@ -1,0 +1,58 @@
+export const packages: Record<string, {price:number; label:string}> = {
+  'Exterior detail': {price:35,label:'exterior detail'},
+  'Interior detail': {price:40,label:'interior detail'},
+  'Full detail': {price:60,label:'interior and exterior combo'}
+};
+export function bookingDetails(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const d = value as Record<string, unknown>;
+  const limits: Record<string,number> = {name:80,phone:30,vehicle:120,service:40,preferredTime:160,needs:600};
+  for (const [key,limit] of Object.entries(limits)) {
+    if (typeof d[key] !== 'string' || d[key].length > limit || (key !== 'needs' && d[key].trim().length < 2)) return null;
+    if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(d[key] as string)) return null;
+  }
+  const phone = (d.phone as string).trim();
+  const digits = phone.replace(/\D/g,'');
+  if (!/^[+\d\s().-]+$/.test(phone) || digits.length < 10 || digits.length > 15 || d.consent !== true || !Object.hasOwn(packages,(d.service as string).trim())) return null;
+  // Allowlist only: no address, chat history, or client-supplied price is stored.
+  return {...Object.fromEntries(Object.keys(limits).map(key=>[key,(d[key] as string).trim()])),consent:true,schemaVersion:2};
+}
+export function notificationText(id:string,d:Record<string,unknown>) {
+  const p=packages[d.service as string];
+  const oneLine=(v:unknown)=>String(v).replace(/\s+/g,' ').trim();
+  const followup='Hello '+oneLine(d.name)+', this is Saif from SC Detailing. Thanks for requesting our $'+p.price+' '+p.label+' for your '+oneLine(d.vehicle)+'! You asked for '+oneLine(d.preferredTime)+'. What time works best? I’ll check our availability.';
+  return 'SC Detailing request '+id+'\n\nName: '+oneLine(d.name)+'\nPhone: '+oneLine(d.phone)+'\nVehicle: '+oneLine(d.vehicle)+'\nPackage: $'+p.price+' '+p.label+'\nPreferred time: '+oneLine(d.preferredTime)+'\nCleaning needs: '+oneLine(d.needs||'None added')+'\nContact consent: agreed\n\nReady-to-copy follow-up:\n'+followup+'\n\nSaif: text the customer manually. Check availability before confirming.';
+}
+type Database = (path:string,body:unknown,prefer?:string)=>Promise<any>;
+export async function deliverNotification(db:Database,env:(key:string)=>string,id:string|null=null,send:typeof fetch=fetch) {
+  // Leave pending jobs untouched until both secrets have been configured.
+  const token=env('TELEGRAM_BOT_TOKEN'),channel=env('TELEGRAM_CHAT_ID');
+  if (!token || !channel) return 'unconfigured';
+  const job=await db('rpc/sc_ai_claim_notification',{p_id:id});
+  if (!job) return 'idle';
+  const finish=(state:string,error:string|null=null,message:number|null=null,delay=60)=>db('rpc/sc_ai_finish_notification',{
+    p_id:job.request_id,p_attempt:job.attempt_id,p_state:state,p_message:message,p_error:error,p_delay:delay
+  });
+  let response:Response;
+  try {
+    response=await send('https://api.telegram.org/bot'+token+'/sendMessage',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      // Plain text keeps customer content inert. Copying is intentionally enabled.
+      body:JSON.stringify({chat_id:channel,text:notificationText(job.request_id,job.details),link_preview_options:{is_disabled:true}}),
+      signal:AbortSignal.timeout(8000)
+    });
+  } catch {
+    await finish('uncertain','network_or_timeout'); return 'uncertain';
+  }
+  let out;
+  try { out=await response.json(); } catch { await finish('uncertain','invalid_telegram_response'); return 'uncertain'; }
+  if (response.ok && out.ok === true && Number.isSafeInteger(out.result?.message_id)) {
+    await finish('sent',null,out.result.message_id); return 'sent';
+  }
+  // Only explicit Telegram rejection proves it is safe to retry.
+  if (out.ok === false && Number.isInteger(out.error_code)) {
+    const delay=Math.max(Number(out.parameters?.retry_after)||0,Math.min(3600,30*2**Math.min(job.attempts,7)));
+    await finish('pending','telegram_'+out.error_code,null,delay); return 'pending';
+  }
+  await finish('uncertain','ambiguous_telegram_response'); return 'uncertain';
+}

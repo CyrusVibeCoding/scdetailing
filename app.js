@@ -5,20 +5,9 @@ const input = $('#message');
 const status = $('#chat-status');
 const quick = $('#quick-replies');
 const foot = $('.chat-foot');
-const fields = [
-  ['name', 'What’s your name?'],
-  ['vehicle', 'What do you drive? Include year, make, and model.'],
-  ['service', 'What kind of detail would you like?'],
-  ['address', 'What’s the service address, including city?'],
-  ['contact', 'What email or phone can the team use to contact you?']
-];
-const services = ['Interior detail', 'Exterior detail', 'Full detail'];
 let mode = 'ai';
 let history = [];
-let details = {};
-let step = 0;
 let pending = false;
-let requestId;
 let trigger;
 
 function bubble(text, role = 'assistant') {
@@ -53,36 +42,10 @@ function showAI() {
   foot.textContent = 'AI can make mistakes. Keep contact details and addresses in the separate booking form.';
   bubble('Hi! I’m SC Detailing’s AI assistant. Tell me what your car needs, or ask about our services.');
   for (const message of history) bubble(message.text, message.role === 'user' ? 'visitor' : 'assistant');
-  choices([['Request a detail', () => startRequest()]]);
+  choices([['Have Saif contact me', () => startRequest()]]);
 }
 
-function ask() {
-  if (step < fields.length) {
-    const [field, question] = fields[step];
-    bubble(question);
-    input.placeholder = field === 'contact' ? 'Your email or phone…' : 'Your answer…';
-    const options = field === 'service' ? services.map(service => [service, () => submit(service)]) : [];
-    choices([...options, ['Ask the AI', showAI]]);
-  } else {
-    bubble('Check your request before sending.\n' + fields.map(([field]) => field + ': ' + details[field]).join('\n'));
-    choices([['Send request', () => submit('Send request')], ['Start over', () => startRequest()], ['Ask the AI', showAI]]);
-    input.placeholder = 'Use the buttons above to continue';
-  }
-}
-
-function startRequest(service) {
-  if (pending) return;
-  mode = 'request';
-  details = service ? { service } : {};
-  requestId = crypto.randomUUID();
-  step = 0;
-  log.replaceChildren();
-  input.value = '';
-  status.textContent = '';
-  foot.textContent = 'Booking details are stored privately in SC Detailing’s database and are not sent to Gemini.';
-  bubble('This separate form saves a detailing request. Pricing and appointment time need confirmation.');
-  ask();
-}
+function startRequest(service) { location.href = 'request.html' + (service ? '?service=' + encodeURIComponent(service) : ''); }
 
 function openChat() {
   trigger = document.activeElement;
@@ -90,63 +53,18 @@ function openChat() {
   if (!log.children.length) showAI();
 }
 
-async function api(body) {
-  const config = window.SC_CONFIG;
-  if (!config?.aiEndpoint || !config?.publishableKey) throw Error('Chat is not connected yet.');
-  const response = await fetch(config.aiEndpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: config.publishableKey, Authorization: 'Bearer ' + config.publishableKey },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(45000)
-  });
-  const data = await response.json();
-  if (!response.ok) throw Error(data.error || 'Chat is unavailable. Please try again.');
-  return data;
-}
+const api = body => window.scApi(body);
 
 async function submit(text) {
   text = text.trim();
   if (!text || pending) return;
   status.textContent = '';
-  if (mode === 'saved') {
-    status.textContent = 'Your request is already saved. Use Ask the AI to return to questions.';
-    return;
-  }
-  if (mode === 'request' && step < fields.length) {
-    if (text.length < 2 || text.length > 300) {
-      status.textContent = 'Please use 2–300 characters for this detail.';
-      return;
-    }
-    if (fields[step][0] === 'service' && !services.includes(text)) {
-      status.textContent = 'Choose Interior detail, Exterior detail, or Full detail.';
-      return;
-    }
-    details[fields[step][0]] = text;
-    bubble(text, 'visitor');
-    input.value = '';
-    step++;
-    if (step === 2 && details.service) step++;
-    ask();
-    return;
-  }
-  if (mode === 'request' && text !== 'Send request') {
-    status.textContent = 'Use Send request or Start over above.';
-    return;
-  }
   pending = true;
   input.disabled = true;
   $('#message-form button').disabled = true;
   quick.querySelectorAll('button').forEach(button => button.disabled = true);
   let staged;
   try {
-    if (mode === 'request') {
-      status.textContent = 'Saving your request…';
-      await api({ action: 'request', id: requestId, details });
-      bubble('Request saved. Your reference is ' + requestId.slice(0, 8) + '. Pricing and appointment time still need confirmation from SC Detailing.');
-      details = {};
-      mode = 'saved';
-      choices([['Ask the AI', showAI]]);
-    } else {
       staged = bubble(text, 'visitor');
       status.textContent = 'Thinking…';
       const messages = [...history.slice(-10), { role: 'user', text }];
@@ -158,7 +76,6 @@ async function submit(text) {
       history.push({ role: 'user', text }, { role: 'model', text: data.reply });
       history = history.slice(-10);
       bubble(data.reply);
-    }
     input.value = '';
     status.textContent = '';
   } catch (error) {

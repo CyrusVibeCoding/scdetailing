@@ -2,7 +2,7 @@
 
 Mobile detailing website with a live Gemini AI receptionist and private booking requests through Supabase. See AI-SETUP.md for the current backend, request review, and verification.
 
-See SETUP.md for deployment, secrets, limitations, and verification. Serve locally with python -m http.server 4173. No build required.
+See SETUP.md for deployment, secrets, Telegram retries, staff recovery, and verification. Serve locally with python -m http.server 4180 (allowed by the backend). No build required. The booking form is request.html. Staff text customers manually; appointment availability must be checked by our team.
 
 ## Beam input
 

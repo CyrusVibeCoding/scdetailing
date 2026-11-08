@@ -1,1 +1,39 @@
-.request-page{background:#e9eef2;max-width:1200px}.request-page header{max-height:none;height:80px}.return-link{font-size:12px}.request-layout{display:grid;grid-template-columns:1fr 1fr}.request-intro{padding:60px 8%;background:#0750c3;color:white}.request-intro h1{font-size:clamp(40px,4.6vw,64px);margin:30px 0;line-height:.98}.request-intro>p:not(.eyebrow){font-size:15px;line-height:1.5;max-width:300px;color:#d4e4ff}.request-intro img{width:100%;aspect-ratio:1.65;object-fit:cover;border-radius:14px;margin:40px 0 20px}.request-intro>span{font-size:9px}.request-form-panel{padding:60px 9%;background:#fff}.request-form-panel h2{font-size:38px;margin:22px 0 14px}.form-description{font-size:14px;color:#65717b;line-height:1.5}#request-form{margin-top:30px}#request-form label{display:block;font-size:13px;margin:20px 0 8px}#request-form input,#request-form select{width:100%;padding:14px;border:1px solid #d6dde3;background:#f7f9fa;border-radius:7px;font-size:15px;min-height:48px}.request-form-panel .primary{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;font-size:14px}.form-note{font-size:11px;color:#75808b;line-height:1.5;margin-top:16px}.request-review{margin-top:30px;border-top:1px solid #e0e5e9;padding-top:25px}.request-review h3{font-size:27px}.request-review p{font-size:13px;line-height:1.5;color:#65717b}.request-review dl{margin:25px 0}.request-review dt{font-size:11px;color:#65717b;margin-top:15px}.request-review dd{margin:4px 0;font-size:16px;overflow-wrap:anywhere}.edit-request{margin-top:22px;background:transparent;border:1px solid #0750c3;border-radius:30px;padding:12px 20px;color:#0750c3}.request-footer{display:flex;justify-content:space-between;padding:24px 4%;font-size:9px;color:#68747f}@media(max-width:700px){.request-page header{height:70px}.return-link{font-size:10px}.request-layout{display:flex;flex-direction:column}.request-intro{padding:35px 7%}.request-intro h1{font-size:42px;margin:22px 0}.request-intro h1 br:last-child{display:none}.request-intro img,.request-intro>span{display:none}.request-form-panel{padding:35px 7% 45px}.request-form-panel h2{font-size:34px}.request-footer{font-size:7px;gap:16px}}
+.request-page { background: #e9eef2; color: #173d50; min-height: 100dvh; }
+.request-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; width: min(1200px, calc(100% - 96px)); margin: auto; padding: 32px 0; color: #173d50; }
+.request-header .brand { font-size: 16px; }
+.request-header > a:last-child { font-size: 14px; text-underline-offset: 4px; }
+.request-layout { width: min(1200px, calc(100% - 96px)); margin: 48px auto 96px; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+.request-intro h1 { font: 400 clamp(40px, 4.4vw, 64px)/1.05 var(--serif); letter-spacing: -.02em; margin: 0 0 32px; }
+.request-intro p { max-width: 39ch; font-size: 16px; line-height: 1.7; margin: 0 0 24px; }
+.request-panel { min-width: 0; background: #faf8f2; border-radius: 20px; padding: 32px; }
+.request-panel h2 { font: 400 36px/1.1 var(--serif); margin: 0 0 16px; }
+.request-panel h3 { font: 400 30px/1.1 var(--serif); margin: 24px 0; }
+.request-panel p { font-size: 14px; line-height: 1.6; margin: 0 0 24px; }
+.request-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 16px; }
+.request-fields label { min-width: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 500; }
+.request-fields label > span { font-weight: 400; }
+.full-width { grid-column: 1 / -1; }
+.request-fields input, .request-fields select, .request-fields textarea { width: 100%; min-width: 0; border: 1px solid #71838b; border-radius: 8px; padding: 12px; color: #173d50; background: #fffefa; font: inherit; font-size: 16px; caret-color: #173d50; }
+.request-fields textarea { resize: vertical; }
+.request-fields input::placeholder, .request-fields textarea::placeholder { color: #576e7b; opacity: 1; }
+.request-fields small { font-size: 13px; font-weight: 400; }
+.consent { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.6; margin: 24px 0; cursor: pointer; }
+.consent input { margin: 4px 0 0; width: 20px; height: 20px; flex-shrink: 0; accent-color: #173d50; }
+.request-panel button { min-height: 48px; padding: 12px 24px; border-radius: 999px; font: inherit; font-size: 16px; cursor: pointer; transition: background-color 160ms ease; }
+.request-primary { border: 1px solid #173d50; background: #173d50; color: #fff; }
+.request-primary:hover { background: #295368; }
+.request-secondary { border: 1px solid #71838b; background: transparent; color: #173d50; }
+.request-secondary:hover { background: #e9eef2; }
+.request-panel button:disabled { opacity: .6; cursor: wait; }
+.request-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+#review-details { margin: 0 0 24px; }
+#review-details dt { font-size: 13px; margin-top: 16px; color: #49616f; }
+#review-details dd { margin: 4px 0 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+#request-status { margin: 24px 0 0; color: #873c1b; overflow-wrap: anywhere; }
+#request-status:empty { display: none; }
+.request-page :focus-visible { outline: 2px solid #173d50; outline-offset: 4px; }
+.request-page ::selection { background: #c5dce9; color: #173d50; }
+[hidden] { display: none !important; }
+@media (max-width: 800px) { .request-header { width: calc(100% - 48px); padding: 24px 0; } .request-layout { width: calc(100% - 48px); margin-top: 24px; grid-template-columns: 1fr; gap: 24px; } .request-intro h1 { font-size: 36px; margin-bottom: 16px; } .request-intro p { max-width: 62ch; font-size: 14px; margin-bottom: 16px; } }
+@media (max-width: 450px) { .request-header, .request-layout { width: calc(100% - 32px); } .request-header { gap: 12px; } .request-header .brand { font-size: 13px; } .request-header > a:last-child { font-size: 13px; } .request-panel { padding: 24px 16px; } .request-fields { grid-template-columns: 1fr; } .request-panel h2 { font-size: 32px; } .request-actions > button, #request-form > button { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .request-panel button { transition: none; } }

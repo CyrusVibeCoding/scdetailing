@@ -1,1 +1,38 @@
-<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=index.html"></head><body><a href="index.html">Request a detail</a></body></html>
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e9eef2"><meta name="robots" content="noindex">
+<title>Have Saif contact me | SC Detailing</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="request.css">
+</head><body class="request-page">
+<header class="request-header"><a class="brand" href="index.html">SC DETAILING</a><a href="index.html#services">Back to services</a></header>
+<main class="request-layout" id="main">
+<div class="request-intro">
+<h1>Good care starts<br>with <em>a conversation.</em></h1>
+<p>We’re high-school students cleaning our neighbors’ cars. Tell us what yours needs, and Saif will text you to follow up.</p>
+<p>Our team needs to check availability before confirming an appointment. Your preferred time is a request.</p>
+</div>
+<section class="request-panel" aria-labelledby="request-title">
+<h2 id="request-title">Have Saif contact me</h2>
+<p id="privacy-note">Your details are saved privately and shared with our team in a private Telegram channel for follow-up. This form is separate from the AI chat.</p>
+<form id="request-form" aria-describedby="privacy-note">
+<div class="request-fields">
+<label>Name<input name="name" autocomplete="name" required minlength="2" maxlength="80"></label>
+<label>Phone number<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="30" aria-describedby="phone-help"><small id="phone-help">A number Saif can text.</small></label>
+<label class="full-width">Vehicle<input name="vehicle" autocomplete="off" required minlength="2" maxlength="120" placeholder="Year, make, and model"></label>
+<label class="full-width">Package<select name="service" required><option value="">Choose a package</option><option value="Exterior detail">Exterior detail · $35</option><option value="Interior detail">Interior detail · $40</option><option value="Full detail">Interior + exterior combo · $60</option></select></label>
+<label class="full-width">Preferred day and time<input name="preferredTime" autocomplete="off" required minlength="2" maxlength="160" placeholder="For example, Saturday afternoon"></label>
+<label class="full-width">Cleaning needs <span>(optional)</span><textarea name="needs" rows="3" maxlength="600" placeholder="For example, crumbs in the back seats"></textarea></label>
+</div>
+<label class="consent"><input type="checkbox" name="consent" required><span>I agree that SC Detailing may contact me by text or phone about this request.</span></label>
+<button class="request-primary" type="submit">Review my request</button>
+</form>
+<div id="request-review" hidden><h3>Check your request</h3><dl id="review-details"></dl>
+<p>Saif will follow up by text. Our team needs to check availability before confirming an appointment.</p>
+<div class="request-actions"><button class="request-primary" id="send-request" type="button">Send my request</button><button class="request-secondary" id="edit-request" type="button">Edit details</button></div></div>
+<div id="request-success" tabindex="-1" hidden><h3>Request saved.</h3><p id="saved-reference"></p><p>Saif will follow up by text. Our team still needs to check availability before confirming your appointment.</p><a href="index.html">Return to SC Detailing</a></div>
+<p id="request-status" role="status" aria-live="polite"></p>
+<noscript>Please enable JavaScript to review and send your request.</noscript>
+</section></main>
+<script src="config.js?v=booking-1"></script><script src="booking-api.js?v=booking-1"></script><script src="request.js?v=booking-1"></script>
+</body></html>

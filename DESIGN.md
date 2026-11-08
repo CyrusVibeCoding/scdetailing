@@ -3,3 +3,6 @@ Pinned reference: blue photographic sky fading into ink, elegant Instrument Seri
 November 7 lower-page revision. User approved reusing the red Porsche 930 and the After Hours scroll transition. A midnight-blue sticky section fades the car into view, dissolves the road, and moves to a closer car view beside the introduction. Ivory service rows replace the old photo cards. A powder-blue conversation section explains the booking process. The existing service selection and chat entry points remain attached to their original application handlers.
 
 Motion is tied to scroll, reversible, and rendered only while changing. Reduced motion uses a stationary composition with a shorter section. The high-resolution roadside poster is the loading and WebGL fallback. Preserve the asset attribution when distributing the site.
+
+
+November 7 booking update. Preserved the sky hero, Porsche scene, type, palette, and service-row structure. Added confirmed inclusions within the existing rows. The separate request page uses the same Instrument Serif/DM Sans typography, powder blue background, ivory form, and rounded controls. It has a short form, editable review, contact consent, clear errors, and a private-save success state. No new calendar or appointment guarantee.

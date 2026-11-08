@@ -1,2 +1,5 @@
 [functions.detailing-chat]
 verify_jwt = false
+
+[functions.sc-ai-chat]
+verify_jwt = true
