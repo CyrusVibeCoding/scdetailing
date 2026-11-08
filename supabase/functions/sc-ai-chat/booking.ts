@@ -17,11 +17,19 @@ export function bookingDetails(value: unknown): Record<string, unknown> | null {
   // Allowlist only: no address, chat history, or client-supplied price is stored.
   return {...Object.fromEntries(Object.keys(limits).map(key=>[key,(d[key] as string).trim()])),consent:true,schemaVersion:2};
 }
-export function notificationText(id:string,d:Record<string,unknown>) {
+export function notificationText(d:Record<string,unknown>) {
   const p=packages[d.service as string];
-  const oneLine=(v:unknown)=>String(v).replace(/\s+/g,' ').trim();
-  const followup='Hello '+oneLine(d.name)+', this is Saif from SC Detailing. Thanks for requesting our $'+p.price+' '+p.label+' for your '+oneLine(d.vehicle)+'! You asked for '+oneLine(d.preferredTime)+'. What time works best? I’ll check our availability.';
-  return 'SC Detailing request '+id+'\n\nName: '+oneLine(d.name)+'\nPhone: '+oneLine(d.phone)+'\nVehicle: '+oneLine(d.vehicle)+'\nPackage: $'+p.price+' '+p.label+'\nPreferred time: '+oneLine(d.preferredTime)+'\nCleaning needs: '+oneLine(d.needs||'None added')+'\nContact consent: agreed\n\nReady-to-copy follow-up:\n'+followup+'\n\nSaif: text the customer manually. Check availability before confirming.';
+  const text = (value: unknown) => String(value).replace(/\s+/g, ' ').trim()
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return [
+    '<b>SC Detailing Request</b>',
+    '<b>Name:</b> ' + text(d.name),
+    '<b>Phone:</b> ' + text(d.phone),
+    '<b>Vehicle:</b> ' + text(d.vehicle),
+    '<b>Package:</b> $' + p.price + ' ' + p.label,
+    '<b>Preferred time:</b> ' + text(d.preferredTime),
+    '<b>Cleaning needs:</b> ' + text(d.needs || 'None added')
+  ].join('\n');
 }
 type Database = (path:string,body:unknown,prefer?:string)=>Promise<any>;
 export async function deliverNotification(db:Database,env:(key:string)=>string,id:string|null=null,send:typeof fetch=fetch) {
@@ -37,8 +45,8 @@ export async function deliverNotification(db:Database,env:(key:string)=>string,i
   try {
     response=await send('https://api.telegram.org/bot'+token+'/sendMessage',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      // Plain text keeps customer content inert. Copying is intentionally enabled.
-      body:JSON.stringify({chat_id:channel,text:notificationText(job.request_id,job.details),link_preview_options:{is_disabled:true}}),
+      // Customer values are HTML-escaped before applying bold labels.
+      body:JSON.stringify({chat_id:channel,text:notificationText(job.details),parse_mode:'HTML',link_preview_options:{is_disabled:true}}),
       signal:AbortSignal.timeout(8000)
     });
   } catch {

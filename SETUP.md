@@ -18,11 +18,11 @@ The separate `request.html` form collects name, phone, vehicle, package, preferr
 
 The server tries delivery immediately after saving. A protected worker runs every five minutes and handles up to five jobs. Explicit Telegram rejections (including rate limits) retry with backoff. Sent jobs retain the Telegram message ID and do not resend. Requests remain saved even if Telegram or the receipt update fails.
 
-Telegram sendMessage has no idempotency parameter. A network timeout, ambiguous response, or worker interruption might have delivered a message. Such jobs become **uncertain**, rather than automatically resending and risking a duplicate. Staff must check the channel for the full request UUID first. A worker interrupted in `sending` becomes uncertain after two minutes when the worker next runs.
+Telegram sendMessage has no idempotency parameter. A network timeout, ambiguous response, or worker interruption might have delivered a message. Such jobs become **uncertain**, rather than automatically resending and risking a duplicate. Staff must find the saved customer phone number in the channel and compare the vehicle, preferred time, and alert time first. A worker interrupted in `sending` becomes uncertain after two minutes when the worker next runs.
 
 ## Staff recovery
 
-In the Supabase Table Editor inspect `sc_ai_notifications` and the associated private `sc_ai_requests` record. `pending` jobs retry automatically; fix missing secrets or bot permissions first. `sent` means a receipt was saved. For `uncertain`, search the private channel for the full request UUID:
+In the Supabase Table Editor inspect `sc_ai_notifications` and the associated private `sc_ai_requests` record. `pending` jobs retry automatically; fix missing secrets or bot permissions first. `sent` means a receipt was saved. For `uncertain`, search the private channel for the saved phone number and compare the vehicle, preferred time, and request creation time:
 
 - If present, record its Telegram message ID, set state to `sent`, and set `sent_at`.
 - If absent after checking, set state to `pending` and `next_attempt_at` to the current time. The worker retries within five minutes. Do not reset a job while a worker is actively sending it.
@@ -32,3 +32,5 @@ Never resend an uncertain job without checking Telegram. Monitor pending/uncerta
 ## Verification
 
 Run `node --test tests/booking.test.mjs` with Node 24 or a TypeScript-capable Node release. Run `npm ci` and `npm run build` if changing the Beam component. This is a static GitHub Pages site with an existing custom domain. Keep the CNAME and HTTPS settings.
+
+November 8 compact alert update. Alerts contain a bold SC Detailing Request title followed by Name, Phone, Vehicle, Package, Preferred time, and Cleaning needs. Follow-up copy and extra footer text were removed at the owner’s request. Customer values are HTML-escaped.

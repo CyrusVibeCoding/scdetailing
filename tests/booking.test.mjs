@@ -10,11 +10,14 @@ test('consent and phone are required; extra fields are dropped',()=>{
   const saved=bookingDetails({...details,address:'not collected',price:1});
   assert.equal(saved.schemaVersion,2); assert.equal(saved.price,undefined); assert.equal(saved.address,undefined);
 });
-test('alert includes confirmed price, request reference, and safe follow-up text',()=>{
-  const text=notificationText('fictional-reference',details);
-  assert.match(text,/\$60 interior and exterior combo/); assert.match(text,/I’ll check our availability/);
-  assert.match(text,/fictional-reference/); assert.match(text,/202-555-0147/);
-  assert.doesNotMatch(text,/wax shield|confirmed appointment/i);
+test('alert contains only the requested seven lines and escapes customer values',()=>{
+  const text=notificationText({...details,name:'Alex <b>& Fictional'});
+  assert.equal(text.split('\n').length,7);
+  assert.match(text,/^<b>SC Detailing Request<\/b>\n/);
+  assert.match(text,/<b>Name:<\/b> Alex &lt;b&gt;&amp; Fictional/);
+  assert.match(text,/<b>Package:<\/b> \$60 interior and exterior combo/);
+  assert.match(text,/<b>Phone:<\/b> 202-555-0147/);
+  assert.doesNotMatch(text,/follow-up|consent|availability|fictional-reference/i);
 });
 const env=key=>({TELEGRAM_BOT_TOKEN:'fictional-token',TELEGRAM_CHAT_ID:'-1000000000000'}[key]||'');
 function database(){
@@ -31,7 +34,13 @@ function database(){
 }
 test('success stores receipt; repeat calls do not send again',async()=>{
   const store=database(); let calls=0;
-  const send=async()=>{calls++;return Response.json({ok:true,result:{message_id:42}})};
+  const send=async(_url,options)=>{
+    calls++;
+    const payload=JSON.parse(options.body);
+    assert.equal(payload.parse_mode,'HTML');
+    assert.equal(payload.text,notificationText(details));
+    return Response.json({ok:true,result:{message_id:42}});
+  };
   assert.equal(await deliverNotification(store.db,env,null,send),'sent');
   assert.equal(await deliverNotification(store.db,env,null,send),'idle');
   assert.equal(calls,1); assert.equal(store.message,42);
