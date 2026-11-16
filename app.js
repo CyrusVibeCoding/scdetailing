@@ -13,6 +13,7 @@ let field = null;
 let editing = false;
 let requestId = null;
 let submittedDetails = null;
+let discussedService = null;
 const packages = {
   'Interior detail': 'Interior detail · $40',
   'Exterior detail': 'Exterior detail · $35',
@@ -70,6 +71,7 @@ function showAI() {
 function startRequest(service) {
   if (pending || submittedDetails) return;
   draft ||= {};
+  if (!draft.service && discussedService) draft.service = discussedService;
   if (Object.hasOwn(packages, service)) draft.service = service;
   foot.textContent = 'You’ll review everything before sending it privately to our team on Telegram.';
   askNext();
@@ -84,7 +86,7 @@ function askNext() {
 function askField(key) {
   const [, label, prompt, limit] = fields.find(([name]) => name === key);
   field = key;
-  $('#message-form').hidden = false;
+  $('#message-form').hidden = key === 'service';
   input.disabled = false;
   $('#message-form button').disabled = false;
   input.value = '';
@@ -97,7 +99,10 @@ function askField(key) {
     ? Object.entries(packages).map(([service, label]) => [label, () => submit(service)])
     : key === 'needs' ? [['Nothing else', () => submit('None added')]] : [];
   choices([...options, ['Ask a service question', () => { editing = false; showAI(); }]]);
-  input.focus();
+  if (key === 'service') {
+    input.blur();
+    quick.querySelector('button')?.focus({ preventScroll: true });
+  } else input.focus({ preventScroll: true });
 }
 
 function collectDetail(text) {
@@ -193,6 +198,16 @@ async function submit(text) {
       }
       const data = await api({ action: 'chat', messages });
       if (typeof data.reply !== 'string' || !data.reply.trim()) throw Error('No answer received. Please try again.');
+      // Carry the customer's latest unambiguous package topic into their review.
+      const interior = /\binterior\b/i.test(text);
+      const exterior = /\bexterior\b/i.test(text);
+      const comparing = /\b(or|versus|vs|compare|difference)\b/i.test(text);
+      if (!comparing && (/\b(full\s*(detail|package|service)|combo)\b/i.test(text) || (interior && exterior && /\b(and|plus)\b|\+/i.test(text)))) {
+        discussedService = 'Full detail';
+      } else if (!comparing && interior !== exterior) {
+        discussedService = interior ? 'Interior detail' : 'Exterior detail';
+      }
+      if (draft && discussedService) draft.service = discussedService;
       history.push({ role: 'user', text }, { role: 'model', text: data.reply });
       history = history.slice(-10);
       bubble(data.reply);
@@ -238,3 +253,14 @@ $('#message-form').onsubmit = event => {
   event.preventDefault();
   submit(input.value);
 };
+
+function fitChatToViewport() {
+  const viewport = window.visualViewport;
+  chat.style.setProperty('--chat-viewport-height', (viewport?.height || window.innerHeight) + 'px');
+  chat.style.setProperty('--chat-viewport-top', (viewport?.offsetTop || 0) + 'px');
+  if (chat.open) log.scrollTop = log.scrollHeight;
+}
+window.visualViewport?.addEventListener('resize', fitChatToViewport);
+window.visualViewport?.addEventListener('scroll', fitChatToViewport);
+window.addEventListener('resize', fitChatToViewport);
+fitChatToViewport();

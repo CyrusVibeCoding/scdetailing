@@ -42,3 +42,10 @@ November 8 public release. GitHub Pages deployment 42489139309 succeeded for e57
 - Live Gemini returned the correct interior price and directed customers to Plan my detail in the chat.
 - Live request d2b6dc0c-47cf-4f8e-854b-984bd63a91c7 is clearly labeled SC TEST Fictional Customer / DO NOT CONTACT OR SCHEDULE. It exposed the existing schema-3 queue gap, was queued after the trigger repair, then reached confirmed Telegram delivery and displayed the exact closing message.
 - Database regression checks cover both supported schema versions, duplicate saves, atomic enqueueing, exclusive claims, retry backoff, saved receipts, interrupted deliveries, and anonymous-access restrictions. Test rows roll back.
+
+
+## November 15 mobile chat correction
+
+Retain the customer’s latest unambiguous package topic from successful AI discussion and carry it into the reviewed request. Comparison questions leave package selection open. Service choices dismiss the keyboard and hide the unused text field. Mobile dialog follows VisualViewport height/offset, uses a solid background, and keeps inputs at 16px to avoid iOS focus zoom. Chat assets have a new cache version.
+
+Browser verification discussed Full detail, entered name and vehicle, and advanced directly to preferred time. A 390x460 viewport kept the header, current question, and composer visible. Computed dialog height 440px, top 10px, opaque background, input 16px. Syntax checks, all 14 unit tests, and diff checks passed. Physical iPhone keyboard behavior still needs device confirmation.
