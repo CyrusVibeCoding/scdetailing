@@ -21,5 +21,10 @@ begin
  if (select state from public.sc_ai_notifications where request_id=id)<>'uncertain' then raise exception 'stale worker blindly retried'; end if;
  if has_table_privilege('anon','public.sc_ai_notifications','select') then raise exception 'anonymous read allowed'; end if;
  if has_function_privilege('anon','public.sc_ai_claim_notification(uuid)','execute') then raise exception 'anonymous claim allowed'; end if;
+ -- Address-bearing chat requests must enqueue just like older request forms.
+ id:=gen_random_uuid();
+ d:=d||'{"schemaVersion":3,"address":"SC TEST fictional address","city":"The Woodlands","state":"TX"}'::jsonb;
+ if not public.sc_ai_save_request(id,d) then raise exception 'chat request save failed'; end if;
+ if (select count(*) from public.sc_ai_notifications where request_id=id)<>1 then raise exception 'address-bearing request not queued'; end if;
 end $test$;
 rollback;

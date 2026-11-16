@@ -67,11 +67,16 @@
   color: #f3f8fc;
   font-size: 14px;
   line-height: 1.6;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 #chat .bubble small { color: #bed2de; font-size: 10px; font-weight: 500; margin-bottom: 6px; }
 #chat .bubble.visitor { background: #dcecf3; color: #173d50; border-radius: 20px 20px 6px 20px; }
 #chat .bubble.visitor small { color: #496979; }
 #chat #quick-replies { flex-shrink: 0; padding: 0 22px; }
+#chat #quick-replies { max-height: 190px; overflow-y: auto; }
+#chat #quick-replies button { min-height: 44px; }
+#chat button:disabled { opacity: .6; cursor: wait; }
 #chat #quick-replies:empty, #chat-status:empty { display: none; }
 #chat #quick-replies button {
   background: #ffffff12;
@@ -92,6 +97,7 @@
   background: #e9f7ff20;
   box-shadow: inset 0 1px 0 #ffffff10;
 }
+#chat #message-form[hidden] { display: none; }
 #chat #message { padding: 10px 0; background: transparent; border-radius: 0; color: #fff; }
 #chat #message::placeholder { color: #d2e0e9; opacity: 1; }
 #chat .send { width: 44px; height: 44px; background: #ffffff30; color: #fff; font-size: 26px; }

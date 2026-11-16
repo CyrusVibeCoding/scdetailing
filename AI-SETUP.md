@@ -71,3 +71,12 @@ Deployed booking backend version 8 with JWT verification enabled. Gemini primary
 +Verified the public service button opens request.html with the selected $60 combo. A fictional public-site request b9986117-df1e-4ff0-b510-0b938ea44132 saved and delivered as Telegram message 3, with one attempt and no delivery error. The live AI chat and Have Saif contact me button also worked. The owner will add Saif later and can test using their own account.
 
 November 8 compact alert update. Telegram notifications now use only the requested title and six labeled fields, with bold labels. Removed the follow-up text, visible request UUID, consent line, and staff reminder. Consent and request UUID remain saved privately. For uncertain deliveries, compare the saved customer phone, vehicle, preferred time, and creation time with channel messages before retrying.
+
+
+## November 15 AI-only contact flow
+
+All website contact and service entry points now use the AI dialog. The assistant discusses services, then Plan my detail collects the existing request fields in chat, with phone last. Customers review or edit the summary and explicitly confirm contact consent before submission. Legacy request.html links redirect to the same chat and preserve selected packages. Website reviews are deferred.
+
+The request endpoint now returns confirmed Telegram delivery state after checking the private saved receipt. Only confirmed delivery displays “our team will be with you soon”. Pending or uncertain delivery keeps the reviewed payload and UUID for safe checks/retries. Personal request fields stay in the guided collection flow and are not sent to Gemini.
+
+Applied supabase/migrations/20261116000558_queue_chat_requests.sql to the live database. The old trigger queued only schema version 2 and skipped address-bearing version 3 requests. Both versions now enqueue with consent. Existing table permissions and idempotent outbox behavior are preserved.

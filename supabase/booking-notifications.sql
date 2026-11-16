@@ -18,7 +18,7 @@ create index sc_ai_notifications_pending on public.sc_ai_notifications(next_atte
 create function public.sc_ai_queue_request() returns trigger
 language plpgsql security invoker set search_path='' as $$
 begin
-  if new.details->>'schemaVersion' = '2' and new.details->'consent' = 'true'::jsonb then
+  if new.details->>'schemaVersion' in ('2', '3') and new.details->'consent' = 'true'::jsonb then
     insert into public.sc_ai_notifications(request_id) values(new.id);
   end if;
   return new;

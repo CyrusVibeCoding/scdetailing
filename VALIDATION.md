@@ -33,3 +33,12 @@ November 7 Telegram and booking flow, sc-ai-chat v8:
 Operational limit: Telegram has no sendMessage idempotency key. Timeout/ambiguous delivery is held for staff review instead of blind retry. Requests remain saved. SETUP.md documents pending/sent/uncertain recovery. No retention deletion policy or calendar was added.
 
 November 8 public release. GitHub Pages deployment 42489139309 succeeded for e57db917494a4aa85ec46bf9cd0d1596a21798b8. Backend v9 keeps JWT verification enabled and gives old cached booking forms an explicit refresh message. Public website service selection, package preselection, consent, review, submission, and save confirmation passed. Fictional request b9986117-df1e-4ff0-b510-0b938ea44132 has one saved request and one Telegram receipt, message 3, attempt 1. Public chat returned the $60 combo price and its $15 savings, and the Have Saif contact me button opened the new form. The live API duplicate/privacy checks and all eight unit tests passed again. Screenshot evidence is booking-live-success.png in this continuation chat’s outputs folder. Local source was synchronized with the release while retaining earlier local verification notes.
+
+
+## November 15 AI-only contact verification
+
+- JavaScript syntax checks, production build, and 14 booking/admin unit tests passed.
+- Browser verified service selection stays inside chat, phone validation, all request fields, editable summary, explicit confirmation, and 390px mobile layout.
+- Live Gemini returned the correct interior price and directed customers to Plan my detail in the chat.
+- Live request d2b6dc0c-47cf-4f8e-854b-984bd63a91c7 is clearly labeled SC TEST Fictional Customer / DO NOT CONTACT OR SCHEDULE. It exposed the existing schema-3 queue gap, was queued after the trigger repair, then reached confirmed Telegram delivery and displayed the exact closing message.
+- Database regression checks cover both supported schema versions, duplicate saves, atomic enqueueing, exclusive claims, retry backoff, saved receipts, interrupted deliveries, and anonymous-access restrictions. Test rows roll back.
