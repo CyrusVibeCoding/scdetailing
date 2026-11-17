@@ -2,6 +2,8 @@ const $ = selector => document.querySelector(selector);
 const chat = $('#chat');
 const log = $('#messages');
 const input = $('#message');
+const messageForm = $('#message-form');
+const sendButton = messageForm.querySelector('button');
 const status = $('#chat-status');
 const quick = $('#quick-replies');
 const foot = $('.chat-foot');
@@ -33,12 +35,21 @@ const fields = [
 function bubble(text, role = 'assistant') {
   const element = document.createElement('div');
   element.className = 'bubble ' + role;
-  const label = document.createElement('small');
-  label.textContent = role === 'visitor' ? 'You' : 'SC Detailing AI';
+  const label = document.createElement('span');
+  label.className = 'sr-only';
+  label.textContent = role === 'visitor' ? 'You: ' : 'SC Detailing AI: ';
   element.append(label, document.createTextNode(text));
   log.append(element);
-  log.scrollTop = log.scrollHeight;
+  scrollToLatest();
   return element;
+}
+
+function scrollToLatest() {
+  const latest = log.lastElementChild;
+  if (!latest) return;
+  log.scrollTop = log.scrollHeight;
+  const top = latest.getBoundingClientRect().top - log.getBoundingClientRect().top;
+  if (top < 0) log.scrollTop += top - 8;
 }
 
 function choices(items) {
@@ -51,6 +62,7 @@ function choices(items) {
     button.disabled = pending;
     quick.append(button);
   }
+  scrollToLatest();
 }
 
 function showAI() {
@@ -186,8 +198,8 @@ async function submit(text) {
   if (field && !['review', 'complete'].includes(field)) return collectDetail(text);
   if (field === 'review' || field === 'complete') return;
   pending = true;
-  input.disabled = true;
-  $('#message-form button').disabled = true;
+  input.value = '';
+  sendButton.disabled = true;
   quick.querySelectorAll('button').forEach(button => button.disabled = true);
   let staged;
   try {
@@ -215,17 +227,16 @@ async function submit(text) {
       history.push({ role: 'user', text }, { role: 'model', text: data.reply });
       history = history.slice(-10);
       bubble(data.reply);
-    input.value = '';
     status.textContent = '';
   } catch (error) {
     staged?.remove();
+    if (!input.value) input.value = text;
     status.textContent = error.name === 'TimeoutError' ? 'The response took too long. Please try again.' : error.message;
   } finally {
     pending = false;
-    input.disabled = false;
-    $('#message-form button').disabled = false;
+    sendButton.disabled = false;
     quick.querySelectorAll('button').forEach(button => button.disabled = false);
-    log.scrollTop = log.scrollHeight;
+    scrollToLatest();
   }
 }
 
@@ -253,7 +264,11 @@ $('#hero-chat').onsubmit = event => {
 };
 $('#close-chat').onclick = () => chat.close();
 chat.addEventListener('close', () => trigger?.focus());
-$('#message-form').onsubmit = event => {
+// Keep the composer focused when tapping Send with the mobile keyboard open.
+sendButton.addEventListener('pointerdown', event => {
+  if (document.activeElement === input) event.preventDefault();
+});
+messageForm.onsubmit = event => {
   event.preventDefault();
   submit(input.value);
 };
@@ -262,7 +277,7 @@ function fitChatToViewport() {
   const viewport = window.visualViewport;
   chat.style.setProperty('--chat-viewport-height', (viewport?.height || window.innerHeight) + 'px');
   chat.style.setProperty('--chat-viewport-top', (viewport?.offsetTop || 0) + 'px');
-  if (chat.open) log.scrollTop = log.scrollHeight;
+  if (chat.open) scrollToLatest();
 }
 window.visualViewport?.addEventListener('resize', fitChatToViewport);
 window.visualViewport?.addEventListener('scroll', fitChatToViewport);

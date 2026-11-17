@@ -7,7 +7,7 @@ const visual = document.querySelector('.porsche-visual');
 const host = document.querySelector('#porsche-scene');
 const intro = document.querySelector('.porsche-intro');
 const outro = document.querySelector('.porsche-outro');
-const cue = document.querySelector('.porsche-meta span:last-child');
+const cue = document.querySelector('.porsche-scroll-cue');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const lowPower = matchMedia('(pointer: coarse)').matches || (navigator.hardwareConcurrency || 8) <= 4;
 const { clamp, lerp, smoothstep } = THREE.MathUtils;
@@ -19,10 +19,8 @@ const roadMaterials = new Set();
 let renderer, road, frameId = 0, last = 0, progress = 0, target = 0;
 let visible = false, started = false, loaded = false, frames = 0, lastRoadFade = -1;
 
-stage.classList.add('is-enhanced');
-
 function requestFrame() {
-  if (!frameId && visible && !document.hidden) {
+  if (loaded && !frameId && visible && !document.hidden) {
     last = performance.now();
     frameId = requestAnimationFrame(frame);
   }
@@ -87,13 +85,14 @@ function frame(now) {
 
 function showFallback() {
   loaded = false;
+  story.classList.add('poster-only');
   stage.classList.add('is-fallback');
   visual.classList.remove('ready');
   host.classList.remove('ready');
   host.dataset.state = 'fallback';
 }
 
-async function loadScene() {
+export async function loadScene() {
   if (started) return;
   started = true;
   host.dataset.state = 'loading';
@@ -191,6 +190,8 @@ async function loadScene() {
       rig.add(beam, beam.target, lens);
     }
     renderer.shadowMap.needsUpdate = true;
+    if (!motion.matches) story.classList.remove('poster-only');
+    stage.classList.add('is-enhanced');
     loaded = true;
     host.dataset.state = 'ready';
     resize();
@@ -198,16 +199,10 @@ async function loadScene() {
   } catch (error) {
     console.warn('Porsche preview is using the static image.', error);
     showFallback();
+    throw error;
   }
 }
 
-const preload = new IntersectionObserver(entries => {
-  if (entries.some(entry => entry.isIntersecting)) {
-    loadScene();
-    preload.disconnect();
-  }
-}, { rootMargin: '800px' });
-preload.observe(story);
 const visibility = new IntersectionObserver(entries => {
   visible = entries[0].isIntersecting;
   if (visible) updateScroll();
