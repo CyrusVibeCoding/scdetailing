@@ -17,7 +17,8 @@ let discussedService = null;
 const packages = {
   'Interior detail': 'Interior detail · $40',
   'Exterior detail': 'Exterior detail · $35',
-  'Full detail': 'Interior + exterior combo · $60'
+  'Full detail': 'Interior + exterior combo · $55',
+  'Premium detail': 'Premium detail · $75'
 };
 const fields = [
   ['name', 'Name', 'What name should our team use?', 80],
@@ -116,7 +117,7 @@ function collectDetail(text) {
     return;
   }
   if (field === 'service' && !Object.hasOwn(packages, text)) {
-    status.textContent = 'Choose one of the three packages above.';
+    status.textContent = 'Choose one of the packages above.';
     return;
   }
   bubble(text, 'visitor');
@@ -202,9 +203,12 @@ async function submit(text) {
       const interior = /\binterior\b/i.test(text);
       const exterior = /\bexterior\b/i.test(text);
       const comparing = /\b(or|versus|vs|compare|difference)\b/i.test(text);
-      if (!comparing && (/\b(full\s*(detail|package|service)|combo)\b/i.test(text) || (interior && exterior && /\b(and|plus)\b|\+/i.test(text)))) {
+      const premium = /\bpremium\b|\$75\b/i.test(text);
+      if (!comparing && premium) {
+        discussedService = 'Premium detail';
+      } else if (!comparing && !premium && (/\b(full\s*(detail|package|service)|combo)\b/i.test(text) || (interior && exterior && /\b(and|plus)\b|\+/i.test(text)))) {
         discussedService = 'Full detail';
-      } else if (!comparing && interior !== exterior) {
+      } else if (!comparing && !premium && interior !== exterior) {
         discussedService = interior ? 'Interior detail' : 'Exterior detail';
       }
       if (draft && discussedService) draft.service = discussedService;

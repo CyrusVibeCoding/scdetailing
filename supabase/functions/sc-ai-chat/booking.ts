@@ -1,7 +1,8 @@
 export const packages: Record<string, {price:number; label:string}> = {
   'Exterior detail': {price:35,label:'exterior detail'},
   'Interior detail': {price:40,label:'interior detail'},
-  'Full detail': {price:60,label:'interior and exterior combo'}
+  'Full detail': {price:55,label:'interior and exterior combo'},
+  'Premium detail': {price:75,label:'premium detail'}
 };
 export function bookingDetails(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;

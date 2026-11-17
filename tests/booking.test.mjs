@@ -24,7 +24,9 @@ test('alert contains only the requested seven lines and escapes customer values'
   assert.equal(text.split('\n').length,7);
   assert.match(text,/^<b>SC Detailing Request<\/b>\n/);
   assert.match(text,/<b>Name:<\/b> Alex &lt;b&gt;&amp; Fictional/);
-  assert.match(text,/<b>Package:<\/b> \$60 interior and exterior combo/);
+  assert.match(text,/<b>Package:<\/b> \$55 interior and exterior combo/);
+  const premium = bookingDetails({...details,service:'Premium detail'});
+  assert.match(notificationText(premium),/<b>Package:<\/b> \$75 premium detail/);
   assert.match(text,/<b>Phone:<\/b> 202-555-0147/);
   assert.doesNotMatch(text,/follow-up|consent|availability|fictional-reference/i);
 });
