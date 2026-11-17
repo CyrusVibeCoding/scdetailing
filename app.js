@@ -275,7 +275,11 @@ messageForm.onsubmit = event => {
 
 function fitChatToViewport() {
   const viewport = window.visualViewport;
-  chat.style.setProperty('--chat-viewport-height', (viewport?.height || window.innerHeight) + 'px');
+  const height = viewport?.height || window.innerHeight;
+  const layoutHeight = Math.max(window.innerHeight, document.documentElement.clientHeight);
+  const keyboardOpen = viewport?.scale === 1 && layoutHeight - height > 120;
+  chat.toggleAttribute('data-keyboard-open', keyboardOpen);
+  chat.style.setProperty('--chat-viewport-height', height + 'px');
   chat.style.setProperty('--chat-viewport-top', (viewport?.offsetTop || 0) + 'px');
   if (chat.open) scrollToLatest();
 }

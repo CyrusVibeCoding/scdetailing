@@ -112,5 +112,8 @@
     border: 0;
     border-radius: 0;
   }
-  #chat #message-form:focus-within + .chat-foot { display: none; }
+  #chat[data-keyboard-open] { padding-bottom: 0; }
+  #chat[data-keyboard-open]::backdrop { background: #fff; }
+  #chat #message-form:focus-within + .chat-foot,
+  #chat[data-keyboard-open] #message-form:not([hidden]) + .chat-foot { display: none; }
 }
